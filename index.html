@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <title>NodeJS + Socket.IO + Arduino - Led Controller</title>
+
+    <style>
+        /* Estilo iOS */
+        .switch__container {
+        margin: 30px auto;
+        width: 120px;
+        }
+
+        .switch {
+        visibility: hidden;
+        position: absolute;
+        margin-left: -9999px;
+        }
+
+        .switch + label {
+        display: block;
+        position: relative;
+        cursor: pointer;
+        outline: none;
+        user-select: none;
+        }
+
+        .switch--shadow + label {
+        padding: 2px;
+        width: 120px;
+        height: 60px;
+        background-color: #dddddd;
+        border-radius: 60px;
+        }
+        .switch--shadow + label:before,
+        .switch--shadow + label:after {
+        display: block;
+        position: absolute;
+        top: 1px;
+        left: 1px;
+        bottom: 1px;
+        content: "";
+        }
+        .switch--shadow + label:before {
+        right: 1px;
+        background-color: #f1f1f1;
+        border-radius: 60px;
+        transition: background 0.4s;
+        }
+        .switch--shadow + label:after {
+        width: 62px;
+        background-color: #fff;
+        border-radius: 100%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        transition: all 0.4s;
+        }
+        .switch--shadow:checked + label:before {
+        background-color: #8ce196;
+        }
+        .switch--shadow:checked + label:after {
+        transform: translateX(60px);
+        }
+
+        /* Estilo Flat */
+        .switch--flat + label {
+        padding: 2px;
+        width: 120px;
+        height: 60px;
+        background-color: #dddddd;
+        border-radius: 60px;
+        transition: background 0.4s;
+        }
+        .switch--flat + label:before,
+        .switch--flat + label:after {
+        display: block;
+        position: absolute;
+        content: "";
+        }
+        .switch--flat + label:before {
+        top: 2px;
+        left: 2px;
+        bottom: 2px;
+        right: 2px;
+        background-color: #fff;
+        border-radius: 60px;
+        transition: background 0.4s;
+        }
+        .switch--flat + label:after {
+        top: 4px;
+        left: 4px;
+        bottom: 4px;
+        width: 56px;
+        background-color: #dddddd;
+        border-radius: 52px;
+        transition: margin 0.4s, background 0.4s;
+        }
+        .switch--flat:checked + label {
+        background-color: #8ce196;
+        }
+        .switch--flat:checked + label:after {
+        margin-left: 60px;
+        background-color: #8ce196;
+        }
+
+
+
+
+        @import url(https://fonts.googleapis.com/css?family=Dosis:700);
+        body {
+        font-family: "Dosis", Helvetica, Arial, sans-serif; 
+        background: #ecf0f1;
+        color: #34495e;
+        padding-top: 40px;
+        text-shadow: white 1px 1px 1px;
+        }
+        .value {
+        border-bottom: 4px dashed #bdc3c7;
+        text-align: center;
+        font-weight: bold;
+        font-size: 10em;
+        width: 300px; 
+        height: 100px;
+        line-height: 60px;
+        margin: 40px auto;
+        letter-spacing: -.07em;
+        text-shadow: white 2px 2px 2px;
+        }
+        input[type="range"] {
+        display: block;
+        -webkit-appearance: none;
+        background-color: #bdc3c7;
+        width: 300px;
+        height: 5px;
+        border-radius: 5px;
+        margin: 0 auto;
+        outline: 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        background-color: #e74c3c;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid white;
+        cursor: pointer;
+        transition: .3s ease-in-out;
+        }​
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background-color: white;
+            border: 2px solid #e74c3c;
+        }
+        input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(1.6);
+        }
+    </style>    
+</head>
+
+<body>
+    <div class="switch__container">
+        <input id="switch-shadow" class="switch switch--shadow" type="checkbox" onchange="click()">
+        <label for="switch-shadow"></label>
+        <div class="value">0</div>
+        <input type="range" min="100" max="1000" step="1" value="0" id="myRange">
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script>
+        jQuery(document).ready(function() {
+
+            var socket = io.connect();
+            $('#switch-shadow').click(function() {
+              if (!$(this).is(':checked')) {
+                socket.emit('turn off', 'Desligou');
+              } else {
+                socket.emit('turn on', 'Ligou');
+              }
+            });
+            
+            var elem = document.querySelector('input[type="range"]');
+            var rangeValue = function(){
+              var newValue = elem.value;
+              var target = document.querySelector('.value');
+              target.innerHTML = newValue;
+            }
+            elem.addEventListener("input", rangeValue);
+
+            $('#myRange').change(function(e) {
+              $('#switch-shadow').attr('checked', true);
+              socket.emit('turn on', 'ligou');
+              socket.emit('blink', e.target.value);
+            });
+
+        });
+    </script>
+        
+      
+</body>
+</html>
